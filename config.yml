@@ -1,6 +1,6 @@
 title: "Визуальная новелла"
 markdown: kramdown
-baseurl: ""  # Если сайт размещён в корне домена, оставь пустым. 
+baseurl: "WebNovyll/"  # Если сайт размещён в корне домена, оставь пустым. 
 url: "https://njko39.github.io/WebNovyll/"  # Поменяй на свой домен при деплое
 
 collections:

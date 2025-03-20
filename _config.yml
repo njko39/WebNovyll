@@ -6,4 +6,4 @@ url: "https://njko39.github.io"
 collections:
   story:
     output: true
-    permalink: "/WebNovyll/story/:name/"
+    permalink: "story/:name/"

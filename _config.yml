@@ -7,3 +7,10 @@ collections:
   story:
     output: true
     permalink: "/story/:name/"
+
+defaults:
+  - scope:
+      path: ""
+      type: "story"
+    values:
+      layout: "story"

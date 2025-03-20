@@ -3,6 +3,8 @@ markdown: kramdown
 baseurl: "/WebNovyll"
 url: "https://njko39.github.io"
 
+plugins:
+  - jekyll-collections
 collections:
   story:
     output: true

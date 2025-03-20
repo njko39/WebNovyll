@@ -1,0 +1,436 @@
+/* Шрифты */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
+
+@font-face {
+    font-family: 'Glasstown NBP';
+    src: url('fonts/GlasstownNbpRegular-RyMM.woff') format('woff');
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+:root {
+    --DialogueFont: "Exo 2", sans-serif;
+    --DialogueFontSize: 24px;
+    --DialogueTextShadowColour: #5C4033;
+    --DialogueTextShadow:
+        -2px -2px 0px var(--DialogueTextShadowColour),
+        2px -2px 0px var(--DialogueTextShadowColour),
+        -2px 2px 0px var(--DialogueTextShadowColour),
+        2px 2px 0px var(--DialogueTextShadowColour),
+        -2px 0px 0px var(--DialogueTextShadowColour),
+        2px 0px 0px var(--DialogueTextShadowColour),
+        0px 2px 0px var(--DialogueTextShadowColour),
+        0px -2px 0px var(--DialogueTextShadowColour);
+    --ButtonFont: "Exo 2", sans-serif;
+    --ButtonFontSize: 15px;
+    --ButtonTextShadowColour: black;
+    --ButtonTextShadow:
+        0px 0px 0px var(--ButtonTextShadowColour),
+        0px 0px 0px var(--ButtonTextShadowColour),
+        0px 0px 0px var(--ButtonTextShadowColour),
+        0px 0px 0px var(--ButtonTextShadowColour);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--DialogueFont);
+    color: white;
+    background-color: #222; /* Тёмный цвет загрузки */
+}
+
+/* Скрываем фон до полной загрузки */
+body.loading .background {
+    opacity: 0;
+}
+
+.game-screen {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    filter: brightness(0.8);
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    background-size: cover;
+    background-position: center;
+    
+}
+
+.dialogue-box {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 150px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 3px solid gold;
+    border-radius: 15px;
+    padding: 20px 35px;
+    font-size: var(--DialogueFontSize);
+    letter-spacing: 1px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-shadow: var(--DialogueTextShadow);
+}
+
+.dialogue-content {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+
+.dialogue-content p {
+    /* opacity: 0; */
+}
+
+
+.character-name {
+    position: absolute;
+    top: -25px;
+    left: 30px;
+    font-weight: bold;
+    color: white;
+    font-size: 20px;
+    background: linear-gradient(to right, #c0392b, #e74c3c);
+    padding: 5px 15px;
+    border-radius: 10px 10px 0 0;
+    border: 2px solid gold;
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+}
+
+.button-panel {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.button-panel button {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: 2px solid gold;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: var(--ButtonFont);
+    font-size: var(--ButtonFontSize);
+    text-transform: uppercase;
+    font-weight: 600;
+    text-shadow: var(--ButtonTextShadow);
+}
+
+.button-panel button:hover {
+    background: gold;
+    color: black;
+}
+
+.character-portrait {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.character-portrait img {
+    height: 85vh;
+    object-fit: contain;
+    display: block;
+}
+
+#debug-btn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 10px 15px;
+    background: #ffcc00;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#debug-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+}
+
+#debug-content {
+    background: rgba(20, 20, 20, 0.95);
+    color: white;
+    padding: 20px;
+    width: 60%;
+    margin: 10% auto;
+    text-align: left;
+    border-radius: 10px;
+    border: 2px solid gold;
+    font-family: var(--DialogueFont);
+    box-shadow: 0px 0px 15px rgba(255, 215, 0, 0.5);
+}
+
+#debug-content h2 {
+    text-align: center;
+    color: gold;
+    margin-bottom: 10px;
+}
+
+#debug-text {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid gold;
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+#copy-btn, #close-btn {
+    margin-top: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    border: 2px solid gold;
+    border-radius: 5px;
+    background: rgba(50, 50, 50, 0.8);
+    color: white;
+    transition: 0.3s;
+}
+
+#copy-btn:hover, #close-btn:hover {
+    background: gold;
+    color: black;
+}
+
+/* Кнопка Log */
+#log-btn {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: 2px solid gold;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#log-btn:hover {
+    background: gold;
+    color: black;
+}
+
+/* Log UI */
+#log-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+}
+
+#log-content {
+    background: rgba(20, 20, 20, 0.95);
+    color: white;
+    padding: 20px;
+    width: 60%;
+    margin: 10% auto;
+    text-align: left;
+    border-radius: 10px;
+    border: 2px solid gold;
+    font-family: var(--DialogueFont);
+    box-shadow: 0px 0px 15px rgba(255, 215, 0, 0.5);
+}
+
+#log-text {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid gold;
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+#log-close-btn {
+    margin-top: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    border: 2px solid gold;
+    border-radius: 5px;
+    background: rgba(50, 50, 50, 0.8);
+    color: white;
+    transition: 0.3s;
+}
+
+#log-close-btn:hover {
+    background: gold;
+    color: black;
+}
+
+/* Стилизация скроллбара для окна Log */
+#log-text::-webkit-scrollbar {
+    width: 10px;
+}
+
+#log-text::-webkit-scrollbar-track {
+    background: rgba(50, 50, 50, 0.8);
+    border-radius: 5px;
+}
+
+#log-text::-webkit-scrollbar-thumb {
+    background: gold;
+    border-radius: 5px;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+}
+
+#log-text::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 215, 0, 0.9);
+}
+
+
+.menu-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    text-shadow: var(--DialogueTextShadow);
+}
+
+.game-title {
+    font-family: 'Exo 2', serif;
+    font-size: 4em;
+    font-weight: normal;
+    margin-bottom: 20px;
+    color: gold;
+    text-shadow: 3px 3px 5px black;
+}
+
+.menu {
+    list-style: none;
+    padding: 0;
+}
+
+.menu li {
+    margin: 10px 0;
+}
+
+.menu-button {
+    display: inline-block;
+    width: 200px;
+    padding: 10px;
+    font-size: var(--ButtonFontSize);
+    text-align: center;
+    font-family: var(--ButtonFont);
+    color: white;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid gold;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s, color 0.3s;
+}
+
+.menu-button:hover {
+    background: gold;
+    color: black;
+}
+
+.dialogue-content {
+    max-height: 100px; /* Ограничение высоты текста */
+    overflow-y: auto; /* Включает вертикальный скроллбар, если текст не помещается */
+    padding-right: 10px; /* Добавляет немного отступа справа, чтобы текст не прилипал к краю */
+}
+
+/* Стилизация скроллбара */
+.dialogue-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dialogue-content::-webkit-scrollbar-track {
+    background: rgba(50, 50, 50, 0.8);
+    border-radius: 5px;
+}
+
+.dialogue-content::-webkit-scrollbar-thumb {
+    background: gold;
+    border-radius: 5px;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+}
+
+.dialogue-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 215, 0, 0.9);
+}
+
+#log-text {
+    background: rgba(20, 20, 20, 0.9); /* Темный фон, как у других элементов */
+    color: white; /* Белый текст */
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid gold;
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 16px;
+    font-family: var(--DialogueFont);
+    text-shadow: var(--DialogueTextShadow);
+    line-height: 1.5;
+    text-align: left;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Стилизация ссылок внутри */
+#log-text a {
+    color: gold;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+#log-text a:hover {
+    text-decoration: underline;
+}
+
+/* Стилизация скроллбара */
+#log-text::-webkit-scrollbar {
+    width: 8px;
+}
+
+#log-text::-webkit-scrollbar-track {
+    background: rgba(50, 50, 50, 0.8);
+    border-radius: 5px;
+}
+
+#log-text::-webkit-scrollbar-thumb {
+    background: gold;
+    border-radius: 5px;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+}
+
+#log-text::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 215, 0, 0.9);
+}

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }}</title>
+    <link rel="stylesheet" href="{{ site.baseurl }}/assets/styles.css">
+</head>
+
+
+<body>
+
+    <div class="game-screen">
+        <div class="background"
+            style="background: url('/assets/backgrounds/{{ page.background }}') center/cover no-repeat;"></div>
+
+        <div class="character-portrait">
+            <img src="{{ site.baseurl }}/assets/characters/test1.png" alt="Главный персонаж">
+        </div>
+
+        <div class="dialogue-box">
+            <div class="character-name">Loading...</div>
+            <div class="dialogue-content">
+                <p id="current-dialogue"><!-- Диалоговое окно заполняется через JavaScript --></p>
+            </div>
+
+            <div class="button-panel">
+                <button id="next-btn">Next</button>
+                <button id="log-btn">📜 Log</button>
+                <a href="{{ site.baseurl }}/">
+                    <button>Menu</button>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Построение лога -->
+    {% comment %}
+    Получаем список всех страниц из папки "story/"
+    {% endcomment %}
+    {% assign story_pages = site.pages | where_exp: "page", "page.path contains 'story/'" %}
+
+    {% if story_pages != empty %}
+    {% assign sorted_pages = story_pages | sort: "path" %}
+    {% assign sorted_paths = "" %}
+
+    {% for p in sorted_pages %}
+    {% assign sorted_paths = sorted_paths | append: p.path | append: "," %}
+    {% endfor %}
+
+    {% assign sorted_paths_array = sorted_paths | split: "," %}
+    {% assign current_index = -1 %}
+
+    {% for path in sorted_paths_array %}
+    {% if path == page.path %}
+    {% assign current_index = forloop.index0 %}
+    {% endif %}
+    {% endfor %}
+
+    {% assign last_index = sorted_paths_array.size | minus: 1 %}
+
+    {% if current_index != -1 and current_index < last_index %} {% assign next_index=current_index | plus: 1 %} {%
+        assign next_page=sorted_pages[next_index] %} {% endif %} {% comment %} Собираем последние 50 диалогов {%
+        endcomment %} {% assign log_entries="" %} {% assign start_index=current_index | minus: 50 %} {% if start_index <
+        0 %} {% assign start_index=0 %} {% endif %} {% assign file_counter=1 %} {% for index in
+        (start_index..current_index) reversed %} {% assign log_page=sorted_pages[index] %} {% if log_page %} {% assign
+        log_entries=log_entries | append: "===== Файл " | append: file_counter | append: " начало =====\n" |
+        append: "Ссылка: /" | append: log_page.path | append: "\n\n" | append: log_page.content | append: "===== Файл "
+        | append: file_counter | append: " конец =====\n\n" %} {% assign file_counter=file_counter | plus: 1 %} {% endif
+        %} {% endfor %} {% endif %} <div id="raw-log-content" style="display: none;">{{ log_entries }}</div>
+
+        <!-- Кнопка "Debug" в правом верхнем углу -->
+        <button id="debug-btn">🛠 Debug</button>
+
+        <!-- Всплывающее окно Debug -->
+        <div id="debug-modal">
+            <div id="debug-content">
+                <h2>Debug Info</h2>
+                <pre id="debug-text"></pre>
+                <button id="copy-btn">📋 Копировать</button>
+                <button id="close-btn">❌ Закрыть</button>
+            </div>
+        </div>
+
+        <!-- Всплывающее окно Log -->
+        <div id="log-modal">
+            <div id="log-content">
+                <h2>Dialogue Log</h2>
+                <div id="log-text" class="log-text"><!-- Отформатированный лог --></div>
+                <button id="log-close-btn">❌ Закрыть</button>
+            </div>
+        </div>
+
+        <!-- Форматирование лога -->
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                let rawLogContent = document.getElementById("raw-log-content").innerText;
+        
+                // Разбиваем на файлы, игнорируя заголовки "Файл X начало"
+                let fileSections = rawLogContent.split(/===== Файл \d+ начало =====/).slice(1);
+                let formattedLog = fileSections.map(formatSection).join(" ");
+        
+                // Финальная очистка от мусора
+                formattedLog = cleanUpText(formattedLog);
+        
+                // Оборачиваем реплики в <p>
+                formattedLog = wrapReplicasWithParagraphs(formattedLog);
+        
+                // Добавляем атрибут storypage_url ко всем <p>
+                formattedLog = addStoryPageUrl(formattedLog);
+        
+                // Выводим отфильтрованный результат
+                updateLog(formattedLog);
+        
+                // Следим за изменением URL
+                window.addEventListener("popstate", () => updateLog(formattedLog));
+            });
+        
+            function formatSection(section) {
+                let idCounter = 0;
+        
+                // Извлекаем ссылку на файл и удаляем её из секции
+                let fileLink = (section.match(/Ссылка: (\/story\/[\d-]+)\.md/) || [])[1];
+                section = section.replace(/Ссылка: \/story\/[\d-]+\.md/, "").trim();
+        
+                // Разбиваем текст на реплики, сохраняя разделители
+                let parts = section.split(/(\[\/ )/g);
+                let structuredParts = [];
+                let buffer = "";
+                let capturing = false;
+        
+                for (let part of parts) {
+                    if (part === "[/ ") {
+                        if (buffer) structuredParts.push(buffer);
+                        buffer = `[/ id="${idCounter++}" `;
+                        capturing = true;
+                    } else if (capturing && part.includes("[/end]")) {
+                        buffer += part;
+                        structuredParts.push(buffer);
+                        buffer = "";
+                        capturing = false;
+                    } else {
+                        buffer += part;
+                    }
+                }
+                if (buffer) structuredParts.push(buffer);
+        
+                // Обрабатываем реплики
+                return structuredParts
+                    .reverse()
+                    .map(replica =>
+                        replica
+                            .replace(/img=[’'][^’']*[’']\s?/g, "") // Удаляем img
+                            .replace(/\s{2,}/g, " ") // Убираем двойные пробелы
+                            .replace(/\[\/ id="(\d+)" char=[’']([^’']*)[’'] \]/g, "<p storypage_id='$1'>$2</p>") // Преобразуем в <p>
+                            .replace(/\[\/end\]/g, "") // Убираем [/end]
+                            .trim()
+                    )
+                    .join(" ") // Собираем текст обратно
+                    .replace(/<p storypage_id='(\d+)'>\s*([^<]+)\s*<\/p>/g, (match, storyId, charName) =>
+                        fileLink ? `<p storypage_id='${storyId}'><a href='${fileLink}?id=${storyId}'>${charName}</a></p>` : match
+                    );
+            }
+        
+            function cleanUpText(text) {
+                return text
+                    .replace(/===== Файл \d+ конец =====/g, "") // Убираем "Файл X конец"
+                    .replace(/\s+/g, " ") // Убираем лишние пробелы
+                    .replace(/\n+/g, " ") // Убираем переносы строк
+                    .replace(/\\n+/g, " ") // Убираем закодированные \n
+                    .trim();
+            }
+        
+            function getCurrentIdFromUrl() {
+                let params = new URLSearchParams(window.location.search);
+                return parseInt(params.get("id"), 10) || Infinity;
+            }
+        
+            function updateLog(fullLog) {
+                let maxId = getCurrentIdFromUrl();
+        
+                // Фильтруем реплики, оставляя только те, у которых storypage_id ≤ maxId
+                let filteredLog = fullLog.replace(/<p storypage_id='(\d+)'>\s*([^<]+)\s*<\/p>/g, (match, id, content) => {
+                    return parseInt(id, 10) <= maxId ? match : "";
+                });
+        
+                document.getElementById("log-text").innerHTML = filteredLog;
+            }
+        
+            function wrapReplicasWithParagraphs(logContent) {
+                return logContent.replace(/(<p storypage_id='(\d+)'>.*?<\/p>)\s*([^<]+)/g, 
+                    (match, nameTag, storyId, replica) => `${nameTag} <p storypage_id='${storyId}'>${replica.trim()}</p>`);
+            }
+        
+            function addStoryPageUrl(logContent) {
+                let lastUrl = "";
+        
+                return logContent.replace(/<p storypage_id='(\d+)'>\s*(<a href='([^']+)'>[^<]+<\/a>)?\s*([^<]*)<\/p>/g, 
+                    (match, storyId, linkTag, url, content) => {
+                        if (url) lastUrl = url; // Обновляем ссылку, если нашли
+                        return `<p storypage_id='${storyId}' storypage_url='${lastUrl}'>${linkTag ? linkTag : content}</p>`;
+                    });
+            }
+        </script>
+        
+        
+        
+
+        <div id="raw-content" style="display: none;">{{ content }}</div>
+
+        <!-- JavaScript -->
+
+        <script>
+            // Появление фона
+            window.addEventListener("load", function () {
+                document.querySelector(".background").style.opacity = "1";
+            });
+
+            // Открытие Debug окна
+            document.getElementById("debug-btn").addEventListener("click", function () {
+                document.getElementById("debug-modal").style.display = "block";
+            });
+
+            // Закрытие Debug окна
+            document.getElementById("close-btn").addEventListener("click", function () {
+                document.getElementById("debug-modal").style.display = "none";
+            });
+
+            // Копирование Debug Info в буфер обмена
+            document.getElementById("copy-btn").addEventListener("click", function () {
+                const text = document.getElementById("debug-text").innerText;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("Debug Info скопирован!");
+                });
+            });
+
+            // Открытие Log окна
+            document.getElementById("log-btn").addEventListener("click", function () {
+                document.getElementById("log-modal").style.display = "block";
+            });
+
+            // Закрытие Log окна
+            document.getElementById("log-close-btn").addEventListener("click", function () {
+                document.getElementById("log-modal").style.display = "none";
+            });
+
+            document.addEventListener("DOMContentLoaded", function () {
+    console.log("🚀 Скрипт загружен!");
+
+    let rawContent = document.getElementById("raw-content");
+    if (!rawContent) {
+        console.error("❌ Ошибка: <div id='raw-content'> не найден!");
+        return;
+    }
+
+    let text = rawContent.innerText.trim();
+    console.log("📜 Исходный текст (из raw-content):", text);
+
+    if (!text) {
+        console.error("❌ Ошибка: raw-content пустой!");
+        return;
+    }
+
+    let regex = /\[\/\s*char=[‘’"']([^‘’"']+)[‘’"']\s*img=[‘’"']([^‘’"']+)[‘’"']\s*\]([\s\S]*?)\[\/end\s*\]/g;
+    let story_content = [];
+    let match;
+    let currentDialogueIndex = 0;
+    let isTyping = false;
+    let typingTimeouts = [];
+    let audio = new Audio("/assets/sounds/typing.mp3");
+
+    console.log("🔍 Начинаем разбор текста...");
+
+    while ((match = regex.exec(text)) !== null) {
+        console.log("🛠 Найден блок:", match);
+        story_content.push({ char: match[1].trim(), img: match[2].trim(), dialogue: match[3].trim() });
+    }
+
+    console.log("📖 Итоговый массив story_content:", story_content);
+
+    function getDialogueIdFromUrl() {
+        let params = new URLSearchParams(window.location.search);
+        let id = parseInt(params.get("id"), 10);
+        return isNaN(id) ? 0 : id;
+    }
+
+    currentDialogueIndex = getDialogueIdFromUrl();
+    if (currentDialogueIndex >= story_content.length) {
+        currentDialogueIndex = 0;
+    }
+    updateDialogue();
+
+    function updateDialogue() {
+        let dialogueData = story_content[currentDialogueIndex];
+
+        let charNameElement = document.querySelector(".character-name");
+        if (charNameElement) charNameElement.textContent = dialogueData.char;
+
+        let charImageElement = document.querySelector(".character-portrait img");
+        if (charImageElement) charImageElement.src = `/assets/characters/${dialogueData.img}`;
+
+        let dialogueElement = document.getElementById("current-dialogue");
+        if (dialogueElement) typeText(dialogueElement, dialogueData.dialogue);
+
+        history.pushState(null, "", `?id=${currentDialogueIndex}`);
+
+        let nextButton = document.getElementById("next-btn");
+        if (nextButton) {
+            if (currentDialogueIndex >= story_content.length - 1) {
+                nextButton.outerHTML = `<a href="{{ site.baseurl }}{{ next_page.url }}"><button id="next-btn">Next</button></a>`;
+            }
+        }
+    }
+
+    let nextButton = document.getElementById("next-btn");
+    if (nextButton) {
+        nextButton.addEventListener("click", function () {
+            if (currentDialogueIndex < story_content.length - 1) {
+                currentDialogueIndex++;
+                updateDialogue();
+            }
+        });
+    }
+
+    document.body.addEventListener("click", function (event) {
+        let dialogueElement = document.getElementById("current-dialogue");
+        if (!dialogueElement) return;
+
+        if (event.target.closest(".dialogue-content") && isTyping) {
+            typingTimeouts.forEach(clearTimeout);
+            typingTimeouts = [];
+            isTyping = false;
+            dialogueElement.textContent = story_content[currentDialogueIndex].dialogue;
+        }
+    });
+
+    function typeText(element, text, speed = 50) {
+        element.textContent = "";
+        let i = 0;
+        isTyping = true;
+
+        function printLetter() {
+            if (i < text.length) {
+                element.textContent += text[i];
+                if (text[i] !== " " && audio.readyState >= 2) {
+                    audio.currentTime = 0;
+                    audio.volume = 0.08; // (значение от 0 до 1)
+
+                    audio.play().catch(err => console.warn("🔇 Звук заблокирован браузером", err));
+                }
+                typingTimeouts.push(setTimeout(printLetter, speed));
+                i++;
+            } else {
+                isTyping = false;
+            }
+        }
+        printLetter();
+    }
+});
+
+
+
+
+
+        </script>
+
+<script>
+    //Скрипт скрытия спойлеров из лога
+    document.addEventListener("DOMContentLoaded", function () {
+        // Запуск при загрузке страницы
+        hideMatchingParagraphs();
+
+        // Отслеживание нажатия кнопки Next
+        document.getElementById("next-btn").addEventListener("click", function () {
+            incrementIdAndRescan();
+        });
+    });
+
+    function hideMatchingParagraphs() {
+        let currentPage = getCurrentPageWithoutHtml();
+        let paragraphs = Array.from(document.querySelectorAll("#log-text p"));
+        let matchIndex = -1; // Индекс первого совпавшего элемента
+
+        console.log("=== Проверка скрытия элементов ===");
+        console.log("Текущая страница (нормализованная):", currentPage);
+
+        // Сначала находим индекс первого совпадающего элемента
+        paragraphs.forEach((p, index) => {
+            let storyUrl = (p.getAttribute("storypage_url") || "").trim();
+            let storyFullUrl = storyUrl.replace(".html", ""); // Убираем ".html" из атрибута, если есть
+
+            console.log("Проверяем элемент:", p);
+            console.log(" → storypage_url:", storyUrl);
+            console.log(" → storyFullUrl (без .html):", storyFullUrl);
+
+            if (storyFullUrl === currentPage && matchIndex === -1) {
+                matchIndex = index;
+                console.log("✅ Найдено первое совпадение! Оставляем всё после него видимым.");
+            }
+        });
+
+        // Теперь скрываем только те элементы, которые выше найденного
+        paragraphs.forEach((p, index) => {
+            if (index < matchIndex) {
+                console.log("🛑 Скрываем элемент!", p);
+                p.style.display = "none";
+            } else {
+                console.log("✅ Оставляем элемент видимым", p);
+                p.style.display = "";
+            }
+        });
+
+        console.log("=== Проверка завершена ===");
+    }
+
+    function incrementIdAndRescan() {
+        let currentPage = getCurrentPageWithoutHtml();
+
+        // Извлекаем id из currentPage
+        let match = currentPage.match(/id=(\d+)/);
+        if (match) {
+            let currentId = parseInt(match[1], 10);
+            let newId = currentId + 1;
+
+            // Создаём новый currentPage с увеличенным id
+            let newPage = currentPage.replace(/id=\d+/, `id=${newId}`);
+            console.log("🔄 Увеличиваем id:", currentPage, "→", newPage);
+
+            // Показываем все скрытые элементы перед повторным сканированием
+            document.querySelectorAll("#log-text p").forEach(p => p.style.display = "");
+
+            // Запускаем проверку заново
+            hideMatchingParagraphs();
+        }
+    }
+
+    function getCurrentPageWithoutHtml() {
+        let currentUrl = new URL(window.location.href);
+        let currentPath = currentUrl.pathname; // "/story/1-0.html" или "/story/1-0"
+        let currentId = currentUrl.searchParams.get("id") || ""; // "0"
+
+        // Удаляем ".html", если есть
+        if (currentPath.endsWith(".html")) {
+            currentPath = currentPath.replace(".html", "");
+        }
+
+        return `${currentPath}?id=${currentId}`;
+    }
+</script>
+
+
+
+
+
+
+
+
+
+</body>
+
+</html>

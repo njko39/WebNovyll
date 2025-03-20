@@ -6,4 +6,4 @@ url: "https://njko39.github.io"  # Поменяй на свой домен пр�
 collections:
   story:
     output: true
-    permalink: "/story/:name/"
+    permalink: "/WebNovyll/story/:name/"

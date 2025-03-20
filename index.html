@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главное меню</title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="{{ site.baseurl }}/assets/styles.css">
 </head>
 <body>
     <div class="game-screen">
-        <div class="background" style="background: url('/assets/backgrounds/Futon_Room.png') center/cover no-repeat; opacity: 1;"></div>
+        <div class="background" style="background: url('{{ site.baseurl }}/assets/backgrounds/Futon_Room.png') center/cover no-repeat; opacity: 1;"></div>
 
         <div class="menu-container">
             <h1 class="game-title">WebNovyll</h1>
             <ul class="menu">
-                <li><a href="/story/0-0/" class="menu-button">Tutorial</a></li>
+                <li><a href="{{ site.baseurl }}/story/0-0/" class="menu-button">Tutorial</a></li>
                 <li><a href="#" class="menu-button">Github</a></li>
             </ul>
         </div>

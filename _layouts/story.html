@@ -13,7 +13,7 @@
 
     <div class="game-screen">
         <div class="background"
-            style="background: url('/assets/backgrounds/{{ page.background }}') center/cover no-repeat;"></div>
+            style="background: url('{{ site.baseurl }}/assets/backgrounds/{{ page.background }}') center/cover no-repeat;"></div>
 
         <div class="character-portrait">
             <img src="{{ site.baseurl }}/assets/characters/test1.png" alt="Главный персонаж">
@@ -159,7 +159,7 @@
                     )
                     .join(" ") // Собираем текст обратно
                     .replace(/<p storypage_id='(\d+)'>\s*([^<]+)\s*<\/p>/g, (match, storyId, charName) =>
-                        fileLink ? `<p storypage_id='${storyId}'><a href='${fileLink}?id=${storyId}'>${charName}</a></p>` : match
+                        fileLink ? `<p storypage_id='${storyId}'><a href='{{ site.baseurl }}${fileLink}?id=${storyId}'>${charName}</a></p>` : match
                     );
             }
         
@@ -268,7 +268,7 @@
     let currentDialogueIndex = 0;
     let isTyping = false;
     let typingTimeouts = [];
-    let audio = new Audio("/assets/sounds/typing.mp3");
+    let audio = new Audio("{{ site.baseurl }}/assets/sounds/typing.mp3");
 
     console.log("🔍 Начинаем разбор текста...");
 
@@ -298,7 +298,7 @@
         if (charNameElement) charNameElement.textContent = dialogueData.char;
 
         let charImageElement = document.querySelector(".character-portrait img");
-        if (charImageElement) charImageElement.src = `/assets/characters/${dialogueData.img}`;
+        if (charImageElement) charImageElement.src = `{{ site.baseurl }}/assets/characters/${dialogueData.img}`;
 
         let dialogueElement = document.getElementById("current-dialogue");
         if (dialogueElement) typeText(dialogueElement, dialogueData.dialogue);

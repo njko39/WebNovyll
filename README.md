@@ -6,12 +6,12 @@ WebNovyll is simple Jekyll theme that looks like visual novel.
 - Put your URL in `config.yml`
 - Upload your stuff in /assets/characters/ and /assets/backgrounds/
 - Put your dialogues in /story/, formatted same way as tutorial files
-- Edit `index.html` to make main page
+- Edit `/layouts/main-menu.html` and `index.md` to make main menu page
 
 # To Do (somewhen)
-- [ ] Choices and routes
+- [ ] Choices and routes (game over by clicking debug button)
 - [ ] THE END (of a game)
-- [ ] Multiple characters sptites at same time
+- [ ] Multiple characters sptites at same time (unbelievable)
 - [ ] Different css presets
 - [ ] A bit better log window
 - [ ] Normal typing sound

@@ -318,23 +318,29 @@
         nextButton.addEventListener("click", function () {
     let dialogueElement = document.getElementById("current-dialogue");
 
-    // Если текст печатается, прерываем анимацию и сразу выводим весь текст
+    console.log("Клик по кнопке Next. isTyping:", isTyping);
+
+    // Если текст ещё печатается → мгновенно показываем весь текст
     if (isTyping) {
-        typingTimeouts.forEach(clearTimeout);
+        console.log("Текст печатается. Прерываем анимацию.");
+        typingTimeouts.forEach(clearTimeout); // Очищаем все таймеры печати
         typingTimeouts = [];
         isTyping = false;
         dialogueElement.textContent = story_content[currentDialogueIndex].dialogue;
         return;
     }
 
-    // Если текст уже напечатан, выполняем стандартное действие
+    // Если текст уже выведен → выполняем стандартную логику
     if (currentDialogueIndex < story_content.length - 1) {
+        console.log("Переход к следующему диалогу.");
         currentDialogueIndex++;
         updateDialogue();
     } else {
+        console.log("Переход на следующую страницу.");
         window.location.href = "{{ site.baseurl }}{{ next_page.url }}";
     }
 });
+
 
     }
 

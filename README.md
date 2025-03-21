@@ -9,7 +9,7 @@ WebNovyll is simple Jekyll theme that looks like visual novel.
 - Edit `/layouts/main-menu.html` and `index.md` to make main menu page
 
 # To Do (somewhen)
-- [ ] Choices and routes (game over by clicking debug button)
+- [ ] Choices and routes
 - [ ] THE END (of a game)
 - [ ] Multiple characters sptites at same time (unbelievable)
 - [ ] Different css presets

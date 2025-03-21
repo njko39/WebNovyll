@@ -316,11 +316,26 @@
     let nextButton = document.getElementById("next-btn");
     if (nextButton) {
         nextButton.addEventListener("click", function () {
-            if (currentDialogueIndex < story_content.length - 1) {
-                currentDialogueIndex++;
-                updateDialogue();
-            }
-        });
+    let dialogueElement = document.getElementById("current-dialogue");
+
+    // Если текст печатается, прерываем анимацию и сразу выводим весь текст
+    if (isTyping) {
+        typingTimeouts.forEach(clearTimeout);
+        typingTimeouts = [];
+        isTyping = false;
+        dialogueElement.textContent = story_content[currentDialogueIndex].dialogue;
+        return;
+    }
+
+    // Если текст уже напечатан, выполняем стандартное действие
+    if (currentDialogueIndex < story_content.length - 1) {
+        currentDialogueIndex++;
+        updateDialogue();
+    } else {
+        window.location.href = "{{ site.baseurl }}{{ next_page.url }}";
+    }
+});
+
     }
 
     document.body.addEventListener("click", function (event) {

@@ -5,6 +5,8 @@ url: "https://njko39.github.io"
 
 plugins:
   - jekyll-collections
+  - jekyll-redirect-from
+
 collections:
   story:
     output: true

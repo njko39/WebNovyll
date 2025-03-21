@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="{{ site.baseurl }}/assets/styles.css">
 </head>
 
-
 <body>
 
     <div class="game-screen">
@@ -16,21 +15,21 @@
             style="background: url('{{ site.baseurl }}/assets/backgrounds/{{ page.background }}') center/cover no-repeat;"></div>
 
         <div class="character-portrait">
-            <img src="{{ site.baseurl }}/assets/characters/test1.png" alt="Главный персонаж">
+            <img src="{{ site.baseurl }}/assets/characters/test-char.png" alt="Главный персонаж"><!-- Показывает эту картинку, если не задана картинка перонажа. Лучше не использовать, чтобы не "мигал" не тот персонаж перед заменой через скрипт -->
         </div>
 
         <div class="dialogue-box">
-            <div class="character-name">Loading...</div>
+            <div class="character-name">Loading...</div><!-- Показывает "Loading...", пока имя персонажа не подменится через скрипт  -->
             <div class="dialogue-content">
                 <p id="current-dialogue"><!-- Диалоговое окно заполняется через JavaScript --></p>
             </div>
 
             <div class="button-panel">
-                <button id="next-btn">Next</button>
-                <button id="log-btn">📜 Log</button>
                 <a href="{{ site.baseurl }}/">
                     <button>Menu</button>
                 </a>
+                <button id="log-btn">📜 Log</button>
+                <button id="next-btn">Next</button>
             </div>
         </div>
     </div>
@@ -70,8 +69,8 @@
         | append: file_counter | append: " конец =====\n\n" %} {% assign file_counter=file_counter | plus: 1 %} {% endif
         %} {% endfor %} {% endif %} <div id="raw-log-content" style="display: none;">{{ log_entries }}</div>
 
-        <!-- Кнопка "Debug" в правом верхнем углу -->
-        <button id="debug-btn">🛠 Debug</button>
+        <!-- Кнопка "Debug" в правом верхнем углу. ' Убрать style="display: none;" ' чтобы показать-->
+        <button id="debug-btn" style="display: none;">🛠 Debug</button>
 
         <!-- Всплывающее окно Debug -->
         <div id="debug-modal">
@@ -204,12 +203,7 @@
             }
         </script>
         
-        
-        
-
         <div id="raw-content" style="display: none;">{{ content }}</div>
-
-        <!-- JavaScript -->
 
         <script>
             // Появление фона
@@ -268,7 +262,7 @@
     let currentDialogueIndex = 0;
     let isTyping = false;
     let typingTimeouts = [];
-    let audio = new Audio("{{ site.baseurl }}/assets/sounds/typing.mp3");
+    let audio = new Audio("{{ site.baseurl }}/assets/sounds/typing.mp3"); // Звук печатания
 
     console.log("🔍 Начинаем разбор текста...");
 
@@ -294,14 +288,14 @@
     function updateDialogue() {
         let dialogueData = story_content[currentDialogueIndex];
 
-        let charNameElement = document.querySelector(".character-name");
+        let charNameElement = document.querySelector(".character-name"); // Имя персонажа
         if (charNameElement) charNameElement.textContent = dialogueData.char;
 
         let charImageElement = document.querySelector(".character-portrait img");
-        if (charImageElement) charImageElement.src = `{{ site.baseurl }}/assets/characters/${dialogueData.img}`;
+        if (charImageElement) charImageElement.src = `{{ site.baseurl }}/assets/characters/${dialogueData.img}`; // Картинка персонажа
 
         let dialogueElement = document.getElementById("current-dialogue");
-        if (dialogueElement) typeText(dialogueElement, dialogueData.dialogue);
+        if (dialogueElement) typeText(dialogueElement, dialogueData.dialogue); // Реплика персонажа
 
         history.pushState(null, "", `?id=${currentDialogueIndex}`);
 
@@ -341,20 +335,25 @@
     }
 });
 
-
     }
 
+    // Пропуск анимации печатания текста при клике в любом месте, КРОМЕ кнопок
     document.body.addEventListener("click", function (event) {
-        let dialogueElement = document.getElementById("current-dialogue");
-        if (!dialogueElement) return;
+    let dialogueElement = document.getElementById("current-dialogue");
+    if (!dialogueElement) return;
 
-        if (event.target.closest(".dialogue-content") && isTyping) {
-            typingTimeouts.forEach(clearTimeout);
-            typingTimeouts = [];
-            isTyping = false;
-            dialogueElement.textContent = story_content[currentDialogueIndex].dialogue;
-        }
-    });
+    // Если клик был по любой кнопке, выходим из функции
+    if (event.target.closest("button")) return;
+
+    // Пропускаем анимацию при клике в любом другом месте
+    if (isTyping) {
+        typingTimeouts.forEach(clearTimeout);
+        typingTimeouts = [];
+        isTyping = false;
+        dialogueElement.textContent = story_content[currentDialogueIndex].dialogue;
+    }
+});
+
 
     function typeText(element, text, speed = 50) {
         element.textContent = "";
@@ -380,13 +379,6 @@
     }
 });
 
-
-
-
-
-        </script>
-
-<script>
     //Скрипт скрытия спойлеров из лога
     document.addEventListener("DOMContentLoaded", function () {
         // Запуск при загрузке страницы
@@ -469,14 +461,6 @@
         return `${currentPath}?id=${currentId}`;
     }
 </script>
-
-
-
-
-
-
-
-
 
 </body>
 

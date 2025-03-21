@@ -5,5 +5,5 @@ title: "Главное меню"
 
 <ul class="menu">
     <li><a href="{{ site.baseurl }}/story/0-0" class="menu-button">Tutorial</a></li>
-    <li><a href="#" class="menu-button">Github</a></li>
+    <li><a href="https://github.com/njko39/WebNovyll" class="menu-button">Github</a></li>
 </ul>
